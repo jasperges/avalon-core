@@ -21,6 +21,14 @@ def has_unsaved_changes():
 def save_file(filepath):
     doc = _document()
     if doc:
+            # Cinema4D does not update the current document path and name when
+            # you save because the same function is used to export data.
+            # If you rename current document after saving then it assumed
+            # it has been changed again which we can't seem to disable.
+            # So we update the work file path and name beforehand
+            doc.SetDocumentPath(os.path.dirname(filepath))
+            doc.SetDocumentName(os.path.basename(filepath))
+
             return c4d.documents.SaveDocument(doc, 
                                               filepath, 
                                               c4d.SAVEDOCUMENTFLAGS_NONE,
