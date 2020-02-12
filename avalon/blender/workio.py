@@ -1,12 +1,12 @@
 """Host API required for Work Files."""
 
 from pathlib import Path
-from typing import List, Optional
+from typing import List, Optional, Text
 
 import bpy
 
 
-def open_file(filepath: str) -> Optional[str]:
+def open_file(filepath: Text) -> Optional[Text]:
     """Open the scene file in Blender."""
 
     preferences = bpy.context.preferences
@@ -23,7 +23,7 @@ def open_file(filepath: str) -> Optional[str]:
     return None
 
 
-def save_file(filepath: str, copy: bool = False) -> Optional[str]:
+def save_file(filepath: Text, copy: bool = False) -> Optional[Text]:
     """Save the open scene file."""
 
     preferences = bpy.context.preferences
@@ -41,7 +41,7 @@ def save_file(filepath: str, copy: bool = False) -> Optional[str]:
     return None
 
 
-def current_file() -> Optional[str]:
+def current_file() -> Optional[Text]:
     """Return the path of the open scene file."""
 
     current_filepath = bpy.data.filepath
@@ -56,13 +56,13 @@ def has_unsaved_changes() -> bool:
     return bpy.data.is_dirty
 
 
-def file_extensions() -> List[str]:
+def file_extensions() -> List[Text]:
     """Return the supported file extensions for Blender scene files."""
 
     return [".blend"]
 
 
-def work_root() -> str:
+def work_root() -> Text:
     """Return the default root to browse for work files."""
 
     from .. import api

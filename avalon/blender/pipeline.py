@@ -2,7 +2,7 @@
 
 import importlib
 import sys
-from typing import Callable, Dict, Iterator, List, Optional
+from typing import Callable, Dict, Iterator, List, Optional, Text
 
 import bpy
 
@@ -45,6 +45,7 @@ def _on_load_post(*args):
 
 def _register_callbacks():
     """Register callbacks for certain events."""
+
     def _remove_handler(handlers: List, callback: Callable):
         """Remove the callback from the given handler list."""
 
@@ -201,12 +202,14 @@ def metadata_update(node: bpy.types.bpy_struct_meta_idprop, data: Dict):
         node[AVALON_PROPERTY][key] = value
 
 
-def containerise(name: str,
-                 namespace: str,
-                 nodes: List,
-                 context: Dict,
-                 loader: Optional[str] = None,
-                 suffix: Optional[str] = "CON") -> bpy.types.Collection:
+def containerise(
+        name: Text,
+        namespace: Text,
+        nodes: List,
+        context: Dict,
+        loader: Optional[Text] = None,
+        suffix: Optional[Text] = "CON",
+) -> bpy.types.Collection:
     """Bundle `nodes` into an assembly and imprint it with metadata
 
     Containerisation enables a tracking of version, author and origin
@@ -222,7 +225,6 @@ def containerise(name: str,
 
     Returns:
         The container assembly
-
     """
 
     node_name = f"{context['asset']['name']}_{name}"
@@ -252,11 +254,12 @@ def containerise(name: str,
 
 def containerise_existing(
         container: bpy.types.Collection,
-        name: str,
-        namespace: str,
+        name: Text,
+        namespace: Text,
         context: Dict,
-        loader: Optional[str] = None,
-        suffix: Optional[str] = "CON") -> bpy.types.Collection:
+        loader: Optional[Text] = None,
+        suffix: Optional[Text] = "CON",
+) -> bpy.types.Collection:
     """Imprint or update container with metadata.
 
     Arguments:
@@ -301,7 +304,6 @@ def parse_container(container: bpy.types.Collection,
 
     Returns:
         The container schema data for this container node.
-
     """
 
     data = lib.read(container)
@@ -350,7 +352,6 @@ def update_hierarchy(containers):
     view for containers.
 
     We need both parent and children to visualize the graph.
-
     """
 
     all_containers = set(_ls())  # lookup set
@@ -381,6 +382,7 @@ def publish():
 
 class Creator(api.Creator):
     """Base class for Creator plug-ins."""
+
     def process(self):
         collection = bpy.data.collections.new(name=self.data["subset"])
         bpy.context.scene.collection.children.link(collection)

@@ -1,7 +1,8 @@
 """Standalone helper functions."""
 
 import contextlib
-from typing import Dict, List, Union
+import typing
+from typing import Dict, List, Text, Union
 
 import bpy
 
@@ -50,8 +51,10 @@ def imprint(node: bpy.types.bpy_struct_meta_idprop, data: Dict):
     pipeline.metadata_update(node, imprint_data)
 
 
-def lsattr(attr: str,
-           value: Union[str, int, bool, List, Dict, None] = None) -> List:
+def lsattr(
+        attr: Text,
+        value: Union[Text, int, bool, List, Dict, None] = None,
+) -> List:
     r"""Return nodes matching `attr` and `value`
 
     Arguments:
@@ -84,7 +87,6 @@ def lsattrs(attrs: Dict) -> List:
         >>> lsattrs({"age": 5, "color": "blue"})
 
     Returns a list.
-
     """
 
     # For now return all objects, not filtered by scene/collection/view_layer.
