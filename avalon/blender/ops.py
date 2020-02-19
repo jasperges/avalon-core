@@ -216,7 +216,6 @@ def draw_avalon_menu(self, context):
 
 
 classes = [
-    LaunchContextManager,
     LaunchCreator,
     LaunchLoader,
     LaunchPublisher,
