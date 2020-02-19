@@ -99,18 +99,6 @@ class LaunchQtApp(bpy.types.Operator):
         return {'FINISHED'}
 
 
-class LaunchContextManager(LaunchQtApp):
-    """Launch Avalon Context Manager."""
-
-    bl_idname = "wm.avalon_contextmanager"
-    bl_label = "Set Avalon Context..."
-
-    def execute(self, context):
-        from ..tools import contextmanager
-        self._window = contextmanager
-        return super().execute(context)
-
-
 class LaunchCreator(LaunchQtApp):
     """Launch Avalon Creator."""
 
@@ -207,8 +195,7 @@ class TOPBAR_MT_avalon(bpy.types.Menu):
 
         asset = api.Session['AVALON_ASSET']
         task = api.Session['AVALON_TASK']
-        context_label = f"{asset}, {task}"
-        layout.operator(LaunchContextManager.bl_idname, text=context_label)
+        layout.label(text=f"{asset}, {task}")
         layout.separator()
         layout.operator(LaunchCreator.bl_idname, text="Create...")
         layout.operator(LaunchLoader.bl_idname, text="Load...")
@@ -220,8 +207,6 @@ class TOPBAR_MT_avalon(bpy.types.Menu):
         layout.operator(LaunchManager.bl_idname, text="Manage...")
         layout.separator()
         layout.operator(LaunchWorkFiles.bl_idname, text="Work Files...")
-        # TODO (jasper): maybe add 'Reload Pipeline', 'Reset Frame Range' and
-        #                'Reset Resolution'?
 
 
 def draw_avalon_menu(self, context):

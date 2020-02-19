@@ -1,7 +1,7 @@
 """Host API required for Work Files."""
 
 from pathlib import Path
-from typing import List, Optional, Text
+from typing import List, Optional, Text, Dict
 
 import bpy
 
@@ -62,13 +62,11 @@ def file_extensions() -> List[Text]:
     return [".blend"]
 
 
-def work_root() -> Text:
+def work_root(session: Dict) -> Text:
     """Return the default root to browse for work files."""
 
-    from .. import api
-
-    work_dir = api.Session["AVALON_WORKDIR"]
-    scene_dir = api.Session.get("AVALON_SCENEDIR")
+    work_dir = session["AVALON_WORKDIR"]
+    scene_dir = session.get("AVALON_SCENEDIR")
     if scene_dir:
         return str(Path(work_dir, scene_dir))
     return work_dir
