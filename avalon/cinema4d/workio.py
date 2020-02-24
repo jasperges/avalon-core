@@ -6,8 +6,8 @@ import c4d
 
 def file_extensions():
     return [".c4d"]
-    
-    
+
+
 def _document():
     return c4d.documents.GetActiveDocument()
 
@@ -21,22 +21,24 @@ def has_unsaved_changes():
 def save_file(filepath):
     doc = _document()
     if doc:
-            # Cinema4D does not update the current document path and name when
-            # you save because the same function is used to export data.
-            # If you rename current document after saving then it assumed
-            # it has been changed again which we can't seem to disable.
-            # So we update the work file path and name beforehand
-            doc.SetDocumentPath(os.path.dirname(filepath))
-            doc.SetDocumentName(os.path.basename(filepath))
+        # Cinema4D does not update the current document path and name when
+        # you save because the same function is used to export data.
+        # If you rename current document after saving then it assumed
+        # it has been changed again which we can't seem to disable.
+        # So we update the work file path and name beforehand
+        doc.SetDocumentPath(os.path.dirname(filepath))
+        doc.SetDocumentName(os.path.basename(filepath))
 
-            return c4d.documents.SaveDocument(doc, 
-                                              filepath, 
-                                              c4d.SAVEDOCUMENTFLAGS_NONE,
-                                              c4d.FORMAT_C4DEXPORT)
+        return c4d.documents.SaveDocument(
+            doc,
+            filepath,
+            c4d.SAVEDOCUMENTFLAGS_NONE,
+            c4d.FORMAT_C4DEXPORT,
+        )
 
 
 def open_file(filepath):
-    filepath = str(filepath)    # C4D LoadFile fails on unicode
+    filepath = str(filepath)  # C4D LoadFile fails on unicode
     return c4d.documents.LoadFile(str(filepath))
 
 
@@ -49,11 +51,10 @@ def current_file():
             return os.path.join(root, fname)
 
 
-def work_root():
-    from avalon import Session
+def work_root(session):
 
-    work_dir = Session["AVALON_WORKDIR"]
-    scene_dir = Session.get("AVALON_SCENEDIR")
+    work_dir = session["AVALON_WORKDIR"]
+    scene_dir = session.get("AVALON_SCENEDIR")
     if scene_dir:
         return os.path.join(work_dir, scene_dir)
     else:

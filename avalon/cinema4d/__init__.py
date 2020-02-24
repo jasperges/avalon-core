@@ -7,9 +7,7 @@ Anything that isn't defined here is INTERNAL and unreliable for external use.
 from .pipeline import (
     install,
     uninstall,
-
     ls,
-
 )
 
 from .workio import (
@@ -18,7 +16,7 @@ from .workio import (
     current_file,
     has_unsaved_changes,
     file_extensions,
-    work_root
+    work_root,
 )
 
 
@@ -35,8 +33,6 @@ __all__ = [
     "has_unsaved_changes",
     "file_extensions",
     "work_root",
-
-
 ]
 
 # Backwards API compatibility
