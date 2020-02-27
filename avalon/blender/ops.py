@@ -2,7 +2,6 @@
 
 import os
 import sys
-from functools import partial
 from pathlib import Path
 from types import ModuleType
 from typing import Dict, List, Optional, Union
@@ -10,60 +9,72 @@ from typing import Dict, List, Optional, Union
 import bpy
 import bpy.utils.previews
 
-from .. import api
+from .. import api, style
+from ..tools import cbsceneinventory, creator, loader, publish, workfiles
 from ..vendor.Qt import QtWidgets
 
 PREVIEW_COLLECTIONS: Dict = dict()
-
-# This seems like a good value to keep the Qt app responsive and doesn't slow
-# down Blender. At least on macOS I the interace of Blender gets very laggy if
-# you make it smaller.
-TIMER_INTERVAL: float = 0.01
-
-
-def _has_visible_windows(app: QtWidgets.QApplication) -> bool:
-    """Check if the Qt application has any visible top level windows."""
-
-    for window in app.topLevelWindows():
-        try:
-            if window.isVisible():
-                return True
-        except RuntimeError:
-            continue
-
-    return False
-
-
-def _process_app_events(app: QtWidgets.QApplication) -> Optional[float]:
-    """Process the events of the Qt app if the window is still visible.
-
-    If the app has any top level windows and at least one of them is visible
-    return the time after which this function should be run again. Else return
-    None, so the function is not run again and will be unregistered.
-    """
-
-    if _has_visible_windows(app):
-        app.processEvents()
-        return TIMER_INTERVAL
-
-    bpy.context.window_manager['is_avalon_qt_timer_running'] = False
-    return None
 
 
 class LaunchQtApp(bpy.types.Operator):
     """A Base class for opertors to launch a Qt app."""
 
-    _app: QtWidgets.QApplication
-    _window: Union[QtWidgets.QDialog, ModuleType]
+    _app: Optional[QtWidgets.QApplication]
+    _window: Optional[Union[QtWidgets.QDialog, ModuleType]]
+    _timer: Optional[bpy.types.Timer]
     _show_args: Optional[List]
     _show_kwargs: Optional[Dict]
 
     def __init__(self):
-        from .. import style
         print(f"Initialising {self.bl_idname}...")
         self._app = (QtWidgets.QApplication.instance()
                      or QtWidgets.QApplication(sys.argv))
         self._app.setStyleSheet(style.load_stylesheet())
+
+    def _is_window_visible(self) -> bool:
+        """Check if the window of the app is visible.
+
+        If `self._window` is an instance of `QtWidgets.QDialog`, simply return
+        `self._window.isVisible()`. If `self._window` is a module check
+        if it has `self._window.app.window` and if so, return `isVisible()`
+        on that.
+        Else return False, because we don't know how to check if the
+        window is visible.
+        """
+
+        window: Optional[QtWidgets.QMainWindow, QtWidgets.QDialog] = None
+        if isinstance(
+                self._window,
+            (QtWidgets.QMainWindow, QtWidgets.QDialog),
+        ):
+            window = self._window
+        if isinstance(self._window, ModuleType):
+            try:
+                window = self._window.app.window
+            except AttributeError:
+                return False
+
+        try:
+            return window is not None and window.isVisible()
+        except (AttributeError, RuntimeError):
+            pass
+
+        return False
+
+    def modal(self, context, event):
+        """Run modal to keep Blender and the Qt UI responsive."""
+
+        if event.type == 'TIMER':
+            if self._is_window_visible():
+                # Process events if the window is visible
+                self._app.processEvents()
+            else:
+                # Stop the operator if the window is closed
+                self.cancel(context)
+                print(f"Stopping modal execution of '{self.bl_idname}'")
+                return {'FINISHED'}
+
+        return {'PASS_THROUGH'}
 
     def execute(self, context):
         """Execute the operator.
@@ -78,25 +89,34 @@ class LaunchQtApp(bpy.types.Operator):
         """
 
         # Check if `self._window` is properly set
-        if getattr(self, "_window", None) is None:
+        if getattr(self, "_window") is None:
             raise AttributeError("`self._window` should be set.")
-        if not isinstance(self._window, (QtWidgets.QDialog, ModuleType)):
+        if not isinstance(
+                self._window,
+            (QtWidgets.QMainWindow, QtWidgets.QDialog, ModuleType),
+        ):
             raise AttributeError(
-                "`self._window` should be a `QDialog or module`.")
+                "`self._window` should be a `QMainWindow`, `QDialog` or module."
+            )
 
         args = getattr(self, "_show_args", list())
         kwargs = getattr(self, "_show_kwargs", dict())
         self._window.show(*args, **kwargs)
+        wm = context.window_manager
+        # Run every 0.01 seconds
+        self._timer = wm.event_timer_add(0.01, window=context.window)
+        wm.modal_handler_add(self)
 
-        wm = bpy.context.window_manager
-        if not wm.get('is_avalon_qt_timer_running', False):
-            bpy.app.timers.register(
-                partial(_process_app_events, self._app),
-                persistent=True,
-            )
-            wm['is_avalon_qt_timer_running'] = True
+        return {'RUNNING_MODAL'}
 
-        return {'FINISHED'}
+    def cancel(self, context):
+        """Remove the event timer when stopping the operator."""
+
+        app = self._app
+        # Close all Windows so they don't stay in limbo
+        self._app.closeAllWindows()
+        wm = context.window_manager
+        wm.event_timer_remove(self._timer)
 
 
 class LaunchCreator(LaunchQtApp):
@@ -106,7 +126,6 @@ class LaunchCreator(LaunchQtApp):
     bl_label = "Create..."
 
     def execute(self, context):
-        from ..tools import creator
         self._window = creator
         return super().execute(context)
 
@@ -118,7 +137,6 @@ class LaunchLoader(LaunchQtApp):
     bl_label = "Load..."
 
     def execute(self, context):
-        from ..tools import loader
         self._window = loader
         if self._window.app.window is not None:
             self._window.app.window = None
@@ -135,7 +153,6 @@ class LaunchPublisher(LaunchQtApp):
     bl_label = "Publish..."
 
     def execute(self, context):
-        from ..tools import publish
         publish_show = publish._discover_gui()
         if publish_show.__module__ == 'pyblish_qml':
             # When using Pyblish QML we don't have to do anything special
@@ -152,7 +169,6 @@ class LaunchManager(LaunchQtApp):
     bl_label = "Manage..."
 
     def execute(self, context):
-        from ..tools import cbsceneinventory
         self._window = cbsceneinventory
         return super().execute(context)
 
@@ -164,7 +180,6 @@ class LaunchWorkFiles(LaunchQtApp):
     bl_label = "Work Files..."
 
     def execute(self, context):
-        from ..tools import workfiles
         root = str(
             Path(
                 os.environ.get("AVALON_WORKDIR", ""),
