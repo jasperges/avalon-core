@@ -6,7 +6,7 @@ from pyblish import api as pyblish
 self = sys.modules[__name__]
 
 
-def install(config):
+def install():
     """Install Cinema4d-specific functionality of avalon-core.
 
     This function is called automatically on calling `api.install(maya)`.
@@ -19,7 +19,7 @@ def install(config):
     pyblish.register_host("cinema4d")
 
 
-def uninstall(config):
+def uninstall():
     """Uninstall Cinema4d-specific functionality of avalon-core.
 
     This function is called automatically on calling `api.uninstall()`.
