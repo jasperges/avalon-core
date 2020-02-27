@@ -23,6 +23,7 @@ if __name__ == "__main__":
         "--exclude-dir=avalon/maya",
         "--exclude-dir=avalon/nuke",
         "--exclude-dir=avalon/houdini",
+        "--exclude-dir=avalon/cinema4d",
 
         # We can expect any vendors to
         # be well tested beforehand.
