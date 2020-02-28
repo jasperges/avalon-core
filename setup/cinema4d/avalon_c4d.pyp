@@ -1,3 +1,28 @@
+"""Insert menu in Cinema4D.
+
+For every menu item you need a plug-in ID. At the moment I quickly registered
+id's for the current Avalon tools.
+
+Keep this table here for reference.
+
+Associated Label            Plugin ID   Creation Date
+===========================================================
+avalontoolsworkfiles        1054572     2020-02-28 14:55:41
+avalontoolssceneinventory   1054571     2020-02-28 14:55:30
+avalontoolspublish          1054570     2020-02-28 14:55:17
+avalontoolsprojectmanager   1054569     2020-02-28 14:55:04
+avalontoolsloader           1054568     2020-02-28 14:54:50
+avalontoolscreator          1054567     2020-02-28 14:53:55
+
+"""
+
+AVALONTOOLSWORKFILES_ID = 1054572
+AVALONTOOLSSCENEINVENTORY_ID = 1054571
+AVALONTOOLSPUBLISH_ID = 1054570
+AVALONTOOLSPROJECTMANAGER_ID = 1054569
+AVALONTOOLSLOADER_ID = 1054568
+AVALONTOOLSCREATOR_ID = 1054567
+
 import c4d
 from c4d import gui
 
@@ -7,7 +32,7 @@ from avalon.vendor.Qt import QtWidgets
 
 
 class ShowCreator(c4d.plugins.CommandData):
-    id = 999121031
+    id = AVALONTOOLSCREATOR_ID
     label = "Create..."
     help = "Show Avalon Creator"
     icon = None
@@ -19,7 +44,7 @@ class ShowCreator(c4d.plugins.CommandData):
 
 
 class ShowLoader(c4d.plugins.CommandData):
-    id = 999121032
+    id = AVALONTOOLSLOADER_ID
     label = "Loader..."
     help = "Show Avalon Loader"
     icon = None
@@ -31,7 +56,7 @@ class ShowLoader(c4d.plugins.CommandData):
 
 
 class ShowSceneInventory(c4d.plugins.CommandData):
-    id = 999121033
+    id = AVALONTOOLSSCENEINVENTORY_ID
     label = "Manage..."
     help = "Show Avalon Loader"
     icon = None
@@ -43,7 +68,7 @@ class ShowSceneInventory(c4d.plugins.CommandData):
 
 
 class ShowPublish(c4d.plugins.CommandData):
-    id = 999121034
+    id = AVALONTOOLSPUBLISH_ID
     label = "Publish..."
     help = "Show Avalon Publish"
     icon = None
@@ -55,7 +80,7 @@ class ShowPublish(c4d.plugins.CommandData):
 
 
 class ShowWorkFiles(c4d.plugins.CommandData):
-    id = 999121035
+    id = AVALONTOOLSWORKFILES_ID
     label = "Work Files..."
     help = "Show Avalon Work Files"
     icon = None
