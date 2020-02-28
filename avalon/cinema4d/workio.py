@@ -39,7 +39,7 @@ def save_file(filepath):
 
 def open_file(filepath):
     filepath = str(filepath)  # C4D LoadFile fails on unicode
-    return c4d.documents.LoadFile(str(filepath))
+    return c4d.documents.LoadFile(filepath)
 
 
 def current_file():
