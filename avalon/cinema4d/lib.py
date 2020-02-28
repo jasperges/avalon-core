@@ -26,7 +26,8 @@ def maintained_selection():
     # remove `Selection`.
 
     doc = active_document()
-    previous_selection = doc.GetSelection()
+    previous_selection = doc.GetActiveObjects(
+        c4d.GETACTIVEOBJECTFLAGS_CHILDREN)
 
     try:
         yield
@@ -35,7 +36,54 @@ def maintained_selection():
             doc.SetSelection(previous_selection, mode=c4d.SELECTION_NEW)
         else:
             # This is probably wrong, but it seems to work.
-            # As far as I understand it creates an empty list of type Opolygon.
+            # As far as I understand it creates an empty list of type Oarray.
             # Then set the selection to this empty list, effectively selecting
             # nothting.
-            doc.SetSelection(c4d.BaseList2D(c4d.Opolygon), c4d.SELECTION_NEW)
+            doc.SetSelection(c4d.BaseList2D(c4d.Oarray), c4d.SELECTION_NEW)
+
+
+@contextlib.contextmanager
+def undo_chunk():
+    """Open a undo chunk during context."""
+
+    doc = active_document()
+
+    try:
+        doc.StartUndo()
+        yield
+    finally:
+        doc.EndUndo()
+
+
+def imprint(node, data):
+    """Write `data` to `node` as userDefined attributes
+
+    Arguments:
+        node (c4d.BaseObject): The selection object
+        data (dict): Dictionary of key/value pairs
+    """
+
+    for key, value in data.items():
+
+        if callable(value):
+            # Support values evaluated at imprint
+            value = value()
+
+        if isinstance(value, bool):
+            add_type = c4d.DTYPE_BOOL
+        elif isinstance(value, basestring):
+            add_type = c4d.DTYPE_STRING
+        elif isinstance(value, int):
+            add_type = c4d.DTYPE_LONG
+        elif isinstance(value, float):
+            add_type = c4d.DTYPE_REAL
+        else:
+            raise TypeError("Unsupported type: %r" % type(value))
+
+        base_container = c4d.GetCustomDataTypeDefault(add_type)
+        base_container[c4d.DESC_NAME] = key
+        base_container[c4d.DESC_SHORT_NAME] = key
+        base_container[c4d.DESC_ANIMATE] = c4d.DESC_ANIMATE_OFF
+        element = node.AddUserData(base_container)
+        node[element] = value
+        c4d.EventAdd()
