@@ -10,6 +10,10 @@ from .pipeline import (
     ls,
     Creator,
 )
+
+from .lib import (
+    active_document,
+    maintained_selection,
 )
 
 from .workio import (
@@ -25,8 +29,11 @@ from .workio import (
 __all__ = [
     "install",
     "uninstall",
-
     "ls",
+    "Creator",
+
+    "active_document",
+    "maintained_selection",
 
     # Workfiles API
     "open_file",

@@ -19,27 +19,20 @@ def active_document():
 def maintained_selection():
     """Maintain selection during context."""
 
-    # TODO (jasper): seeing the `Selection` object, this might be the way to
-    # go. In the GUI you even have the option 'restore' selection. Then the
-    # workflow would be: create `Selection` with currently selected objects
-    # (default from GUI) → do stuff → restore selection from `Selection` →
-    # remove `Selection`.
-
     doc = active_document()
-    previous_selection = doc.GetActiveObjects(
-        c4d.GETACTIVEOBJECTFLAGS_CHILDREN)
+    previous_selection = doc.GetSelection()
 
     try:
         yield
     finally:
         if previous_selection:
-            doc.SetSelection(previous_selection, mode=c4d.SELECTION_NEW)
+            # First start a new selection with the first object
+            doc.SetSelection(previous_selection[0], c4d.SELECTION_NEW)
+            # Then add the other objects to the selections
+            for obj in previous_selection[1:]:
+                doc.SetSelection(obj, c4d.SELECTION_ADD)
         else:
-            # This is probably wrong, but it seems to work.
-            # As far as I understand it creates an empty list of type Oarray.
-            # Then set the selection to this empty list, effectively selecting
-            # nothting.
-            doc.SetSelection(c4d.BaseList2D(c4d.Oarray), c4d.SELECTION_NEW)
+            doc.SetSelection(None, c4d.SELECTION_NEW)
 
 
 @contextlib.contextmanager
@@ -73,6 +66,8 @@ def imprint(node, data):
             add_type = c4d.DTYPE_BOOL
         elif isinstance(value, basestring):
             add_type = c4d.DTYPE_STRING
+            # Cinema 4D doesn't except unicode, so convert to string
+            value = str(value)
         elif isinstance(value, int):
             add_type = c4d.DTYPE_LONG
         elif isinstance(value, float):
@@ -86,4 +81,5 @@ def imprint(node, data):
         base_container[c4d.DESC_ANIMATE] = c4d.DESC_ANIMATE_OFF
         element = node.AddUserData(base_container)
         node[element] = value
-        c4d.EventAdd()
+
+    c4d.EventAdd()
