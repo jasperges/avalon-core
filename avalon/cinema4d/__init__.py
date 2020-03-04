@@ -8,6 +8,8 @@ from .pipeline import (
     install,
     uninstall,
     ls,
+    Creator,
+)
 )
 
 from .workio import (

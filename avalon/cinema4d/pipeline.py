@@ -77,6 +77,7 @@ class Creator(api.Creator):
             in_exclude_data = instance[c4d.SELECTIONOBJECT_LIST]
             for node in nodes:
                 in_exclude_data.InsertObject(node, 1)
+            instance[c4d.SELECTIONOBJECT_LIST] = in_exclude_data
             doc.InsertObject(instance)
             lib.imprint(instance, self.data)
             c4d.EventAdd()
