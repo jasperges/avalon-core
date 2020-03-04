@@ -2,24 +2,21 @@
 import os
 
 import c4d
+from . import lib
 
 
 def file_extensions():
     return [".c4d"]
 
 
-def _document():
-    return c4d.documents.GetActiveDocument()
-
-
 def has_unsaved_changes():
-    doc = _document()
+    doc = lib.active_document()
     if doc:
         return doc.GetChanged()
 
 
 def save_file(filepath):
-    doc = _document()
+    doc = lib.active_document()
     if doc:
         # Cinema4D does not update the current document path and name when
         # you save because the same function is used to export data.
@@ -31,7 +28,7 @@ def save_file(filepath):
 
         return c4d.documents.SaveDocument(
             doc,
-            filepath,
+            str(filepath),
             c4d.SAVEDOCUMENTFLAGS_NONE,
             c4d.FORMAT_C4DEXPORT,
         )
@@ -43,7 +40,7 @@ def open_file(filepath):
 
 
 def current_file():
-    doc = _document()
+    doc = lib.active_document()
     if doc:
         root = doc.GetDocumentPath()
         fname = doc.GetDocumentName()
